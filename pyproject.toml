@@ -29,6 +29,8 @@ dependencies = [
     "xdem",
     "omegaconf",
     "pytransform3d",
+    "dask[distributed]",
+    "requests",
 ]
 requires-python = ">=3.10"
 
