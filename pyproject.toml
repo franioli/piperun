@@ -57,12 +57,10 @@ Homepage = "https://github.com/franioli/pyASP"
 packages = ["pyasp"]
 
 [tool.pytest.ini_options]
+pythonpath = "src"
 addopts = [
     "--import-mode=importlib",
 ]
-
-[tool.isort]
-profile = "black"
 
 [tool.bumpver]
 current_version = "0.0.2"
