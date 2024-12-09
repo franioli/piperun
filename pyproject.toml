@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=65", "wheel"]
+requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,16 +7,15 @@ name = "pyasp"
 version = "0.0.2"
 description = ""
 readme = "README.md"
-authors = [
-    { name = "Francesco Ioli", email = "francesco.ioli@polimi.it" },
-]
+authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 license = { file = "LICENSE" }
 classifiers = [
-    "License :: OSI Approved :: MIT license ",
+    "License :: OSI Approved :: BSD 3-Clause License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
 keywords = []
+requires-python = ">=3.11"
 dependencies = [
     "numpy",
     "matplotlib",
@@ -31,8 +30,18 @@ dependencies = [
     "pytransform3d",
     "dask[distributed]",
     "requests",
+    # Additional asp_plot dependencies 
+    "click",
+    "contextily",
+    "fiona",
+    "geopandas",
+    "matplotlib-scalebar",
+    "markdown-pdf",
+    "sliderule",
+    # Install asp_plot from GitHub
+    "asp-plot @ git+https://github.com/uw-cryo/asp_plot.git",
+
 ]
-requires-python = ">=3.10"
 
 
 [project.optional-dependencies]
@@ -58,9 +67,7 @@ packages = ["pyasp"]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
-addopts = [
-    "--import-mode=importlib",
-]
+addopts = ["--import-mode=importlib"]
 
 [tool.bumpver]
 current_version = "0.0.2"
@@ -71,10 +78,5 @@ tag = false
 push = false
 
 [tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    'current_version = "{version}"',
-    'version = "{version}"'
-]
-"pyasp/__init__.py" = [
-    "{version}"
-]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"pyasp/__init__.py" = ["{version}"]
