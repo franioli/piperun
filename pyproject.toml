@@ -30,17 +30,6 @@ dependencies = [
     "pytransform3d",
     "dask[distributed]",
     "requests",
-    # Additional asp_plot dependencies 
-    "click",
-    "contextily",
-    "fiona",
-    "geopandas",
-    "matplotlib-scalebar",
-    "markdown-pdf",
-    "sliderule",
-    # Install asp_plot from GitHub
-    "asp-plot @ git+https://github.com/uw-cryo/asp_plot.git",
-
 ]
 
 
