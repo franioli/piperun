@@ -36,8 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "flake8",
-    "black",
+    "ruff",
     "bumpver",
     "isort",
     "pip-tools",
