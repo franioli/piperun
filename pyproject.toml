@@ -30,6 +30,7 @@ dependencies = [
     "pytransform3d",
     "dask[distributed]",
     "requests",
+    "graphviz",
 ]
 
 
