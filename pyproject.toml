@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=65", "wheel"]
+requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,9 +7,7 @@ name = "pyasp"
 version = "0.0.2"
 description = ""
 readme = "README.md"
-authors = [
-    { name = "Francesco Ioli", email = "francesco.ioli@polimi.it" },
-]
+authors = [{ name = "Francesco Ioli", email = "francesco.ioli@polimi.it" }]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT license ",
@@ -31,6 +29,9 @@ dependencies = [
     "pytransform3d",
     "dask[distributed]",
     "requests",
+    "geopandas",
+    "shapely",
+    "seaborn",
 ]
 requires-python = ">=3.10"
 
@@ -58,9 +59,7 @@ packages = ["pyasp"]
 
 [tool.pytest.ini_options]
 pythonpath = "src"
-addopts = [
-    "--import-mode=importlib",
-]
+addopts = ["--import-mode=importlib"]
 
 [tool.bumpver]
 current_version = "0.0.2"
@@ -71,10 +70,5 @@ tag = false
 push = false
 
 [tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    'current_version = "{version}"',
-    'version = "{version}"'
-]
-"pyasp/__init__.py" = [
-    "{version}"
-]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"pyasp/__init__.py" = ["{version}"]
