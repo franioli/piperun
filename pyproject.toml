@@ -7,16 +7,17 @@ name = "pyasp"
 version = "0.0.2"
 description = ""
 readme = "README.md"
-authors = [{ name = "Francesco Ioli", email = "francesco.ioli@polimi.it" }]
+authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 license = { file = "LICENSE" }
 classifiers = [
-    "License :: OSI Approved :: MIT license ",
+    "License :: OSI Approved :: BSD 3-Clause License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
 keywords = []
+requires-python = ">=3.11"
 dependencies = [
-    "numpy",
+    "numpy<=2.0",
     "matplotlib",
     "pandas",
     "opencv-python",
@@ -32,14 +33,13 @@ dependencies = [
     "geopandas",
     "shapely",
     "seaborn",
+    "graphviz",
 ]
-requires-python = ">=3.10"
 
 
 [project.optional-dependencies]
 dev = [
-    "flake8",
-    "black",
+    "ruff",
     "bumpver",
     "isort",
     "pip-tools",
@@ -52,7 +52,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/franioli/pyASP"
+Homepage = "https://https://github.com/RSE-UZH/pyasp"
 
 [tool.setuptools]
 packages = ["pyasp"]
