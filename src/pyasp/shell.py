@@ -213,13 +213,45 @@ class Command:
             *args: Positional arguments to extend the command.
             **kwargs: Keyword arguments to add as parameters to the command.
         """
+
+        def is_boolean(value) -> bool:
+            return isinstance(value, bool)
+
+        def is_short_key(key) -> bool:
+            return len(key) == 1 or key.startswith("-")
+
+        def is_long_key(key) -> bool:
+            return len(key) > 1 or key.startswith("--")
+
+        def is_empty_string(value) -> bool:
+            return value == ""
+
+        def short_key(key) -> str:
+            if key.startswith("-"):
+                return key
+            return f"-{key}"
+
+        def long_key(key: str) -> str:
+            if key.startswith("--"):
+                return key
+            return f"--{key}"
+
+        def format_key(key: str) -> str:
+            if is_short_key(key):
+                return short_key(key)
+            elif is_long_key(key):
+                return long_key(key)
+            else:
+                raise ValueError(f"Invalid key: {key}")
+
+        # If no arguments are provided, return
         if not args and not kwargs:
             return
 
         # Extend the command with the positional arguments
         for arg in args:
             # Handle the case where the argument is a list: Convert list elements to strings
-            if isinstance(arg, list):
+            if isinstance(arg, list | tuple):
                 self.cmd.extend(map(str, arg))
                 continue
 
@@ -228,52 +260,43 @@ class Command:
 
         # Extend the command with additional keyword arguments
         for key, value in kwargs.items():
-            # Handle boolean flags (no value)
-            if isinstance(value, bool) and value is True:
-                self.cmd.append(f"{key}")
-                continue
-            if isinstance(value, bool) and value is False:
-                continue
-
-            if isinstance(value, str) and value == "":
-                self.cmd.append(f"{key}")
-                continue
-
-            # Handle no value for the key
+            # Key with no value -> Skip it
             if value is None:
+                logger.info(
+                    f"Skipping key {key} with no value. Check if this is the correct behavior."
+                )
+                continue
+
+            # Handle boolean flags
+            # If the value is a boolean and is True, add the key as a flag
+            if is_boolean(value) and value is True:
+                self.cmd.append(format_key(key))
+                continue
+            # If the value is a boolean and is False, add the key as a flag
+            if is_boolean(value) and value is False:
+                logger.info(
+                    f"Adding key {key} with value 'false'. Check if this is the correct behavior."
+                )
+                self.cmd.append([format_key(key), "false"])
+                continue
+            # If the value is an empty string, add the key as a flag
+            if is_empty_string(value):
+                logger.info(
+                    f"Adding key {key} with value ''. Check if this is the correct behavior."
+                )
+                self.cmd.append(format_key(key))
                 continue
 
             # Handle the case where the value is a list or tuple
+            # Convert list elements to strings and add them to the command
             if isinstance(value, list | tuple):
-                for val in value:
-                    self.cmd.extend([f"{key}", str(val)])
+                self.cmd.extend([format_key(key), " ".join(map(str, value))])
                 continue
 
-            # Add the key and value as separate arguments
-            # If the key include '--' or '-', directly add it
-            if key.startswith("--") or key.startswith("-"):
-                self.cmd.extend([f"{key}", str(value)])
-            # Otherwise, transform the key to a command line argument format
-            else:
-                # Replace underscores with hyphens
-                key = key.replace("_", "-")
-
-                if len(key) == 1:  # Short keys
-                    if isinstance(value, bool):
-                        if value:
-                            self.cmd.extend([f"-{key}"])
-                    else:
-                        self.cmd.extend([f"-{key}", str(value)])
-
-                elif len(key) > 1:  # Long keys
-                    if isinstance(value, bool):
-                        if value:
-                            self.cmd.extend([f"--{key}"])
-                    else:
-                        self.cmd.extend([f"--{key}", str(value)])
-
-                else:
-                    raise ValueError(f"Invalid key: {key}")
+            try:
+                self.cmd.extend([format_key(key), str(value)])
+            except Exception as e:
+                raise ValueError(f"Invalid key: {key}") from e
 
     def run(self):
         """
