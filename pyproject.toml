@@ -26,6 +26,7 @@ dependencies = [
     "pyproj",
     "tqdm",
     "xdem",
+    "geoutils",
     "omegaconf",
     "pytransform3d",
     "dask[distributed]",
@@ -34,10 +35,11 @@ dependencies = [
     "shapely",
     "seaborn",
     "graphviz",
-
 ]
+
 [project.optional-dependencies]
-asp_plot = ["asp_plot"]
+asp-plot = ["fiona", "matplotlib-scalebar", "contextily", "markdown-pdf"]
+
 dev = [
     "ruff",
     "bumpver",
@@ -49,7 +51,7 @@ dev = [
     "mkdocstrings[python]",
     "pre-commit",
 ]
-all = ["pyasp[asp_plot,dev]"]
+all = ["pyasp[asp-plot,dev]"]
 
 [project.urls]
 Homepage = "https://github.com/RSE-UZH/pyasp"
