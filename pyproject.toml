@@ -58,6 +58,7 @@ dev = [
     "mkdocs-material",
     "mkdocstrings[python]",
     "pre-commit",
+    "icecream",
 ]
 all = ["pyasp[asp-plot,dev]"]
 
