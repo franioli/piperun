@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=65", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pyasp"
@@ -8,6 +8,9 @@ version = "0.0.3"
 description = "Python package for Ames Stereo Pipeline processing"
 readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
+maintainers = [
+    { name = "Remote sensing of Environmental Changes Group UZH", email = "francesco.ioli@geo.uzh.ch" },
+]
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 keywords = ["ASP", "DEM", "photogrammetry", "stereo"]
@@ -37,6 +40,11 @@ dependencies = [
     "graphviz",
 ]
 
+[project.urls]
+Homepage = "https://github.com/RSE-UZH/pyasp"
+Documentation = "https://github.com/RSE-UZH/pyasp/"
+Repository = "https://github.com/RSE-UZH/pyasp"
+
 [project.optional-dependencies]
 asp-plot = ["fiona", "matplotlib-scalebar", "contextily", "markdown-pdf"]
 
@@ -53,18 +61,17 @@ dev = [
 ]
 all = ["pyasp[asp-plot,dev]"]
 
-[project.urls]
-Homepage = "https://github.com/RSE-UZH/pyasp"
-Documentation = "https://github.com/RSE-UZH/pyasp/"
-Repository = "https://github.com/RSE-UZH/pyasp"
-
-
-[tool.setuptools]
-packages = ["pyasp"]
+[tool.hatch]
+version.path = "src/pyasp/__init__.py"
 
 [tool.pytest.ini_options]
-pythonpath = "pyasp"
-addopts = ["--import-mode=importlib"]
+minversion = "7.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
+testpaths = ["tests"]
+
 
 [tool.bumpver]
 current_version = "0.0.3"
@@ -76,4 +83,4 @@ push = false
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
-"pyasp/__init__.py" = ["{version}"]
+"src/pyasp/__init__.py" = ["{version}"]
