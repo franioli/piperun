@@ -1,7 +1,7 @@
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any
 
 import dask
 from dask.distributed import Client, LocalCluster
@@ -120,7 +120,7 @@ class ParallelBlock:
 
     def __init__(
         self,
-        steps: Union[List[Any], Dict[str, Any]] = [],
+        steps: list[Any] | dict[str, Any] = None,
         workers: int = None,
     ):
         """Initialize a ParallelBlock instance.
@@ -129,7 +129,9 @@ class ParallelBlock:
             steps: List or dictionary of pipeline steps to run in parallel.
             workers: Number of Dask workers to use. If None, uses all available cores.
         """
-        if isinstance(steps, dict):
+        if steps is None:
+            steps = []
+        elif isinstance(steps, dict):
             steps = [step for step in steps.values()]
 
         for step in steps:
@@ -149,7 +151,7 @@ class ParallelBlock:
             f"Dask client started with {self._workers or cluster.n_workers} workers."
         )
 
-    def add_step(self, step: Union[AspStepBase, Command]):
+    def add_step(self, step: AspStepBase | Command):
         """Add a step to the parallel block.
 
         Args:
@@ -158,7 +160,7 @@ class ParallelBlock:
         Raises:
             TypeError: If step is not of allowed type.
         """
-        if not isinstance(step, (AspStepBase, Command)):
+        if not isinstance(step, AspStepBase | Command):
             raise TypeError(
                 f"Invalid {step} in steps. Allowed steps are AspStepBase or Command."
             )
@@ -217,9 +219,11 @@ class Pipeline:
         _steps (List[Any]): List of pipeline steps to execute.
     """
 
-    _steps: List[Any] = []
+    _steps: list[Any] = []
 
-    def __init__(self, steps: List[Any] | dict[str, Any] = []):
+    def __init__(self, steps: list[Any] | dict[str, Any] = None):
+        if steps is None:
+            steps = []
         """Initialize a Pipeline instance.
 
         Args:
@@ -244,7 +248,7 @@ class Pipeline:
         return self.steps[key]
 
     @property
-    def steps(self) -> List[Any]:
+    def steps(self) -> list[Any]:
         """Get the list of pipeline steps.
 
         Returns:
@@ -262,7 +266,7 @@ class Pipeline:
             TypeError: If step is not of allowed type.
         """
         if not isinstance(
-            step, (DelayedTask, Command, ParallelBlock, Pipeline, AspStepBase)
+            step, DelayedTask | Command | ParallelBlock | Pipeline | AspStepBase
         ):
             raise TypeError(
                 f"Invalid {step} in steps. Allowed steps are AspStepBase, Command, Pipeline, or ParallelBlock."

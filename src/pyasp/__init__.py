@@ -17,7 +17,7 @@ from .utils.timer import Timer
 __version__ = "0.0.3"
 
 
-class PyaspError(Exception):
+class PyASPError(Exception):
     """Custom exception for Ames Stereo Pipeline errors."""
 
     pass
@@ -73,7 +73,7 @@ def add_asp_binary(path: Path) -> bool:
     Returns:
         bool: True if the ASP binaries were added to the PATH, False otherwise.
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise TypeError("directory must be a string or Path object")
     path = Path(path).resolve()
     if not path.is_dir():
@@ -89,13 +89,13 @@ def get_latest_asp_release():
     url = "https://api.github.com/repos/NeoGeographyToolkit/StereoPipeline/releases/latest"
     response = requests.get(url)
     if response.status_code != 200:
-        raise PyaspError("Failed to fetch latest ASP release info")
+        raise PyASPError("Failed to fetch latest ASP release info")
 
     assets = response.json()["assets"]
     for asset in assets:
         if "x86_64-Linux.tar.bz2" in asset["name"]:
             return asset["browser_download_url"]
-    raise PyaspError("No Linux binary found in latest release")
+    raise PyASPError("No Linux binary found in latest release")
 
 
 def download_asp_binaries():
@@ -120,7 +120,7 @@ def download_asp_binaries():
 
             # Verify the downloaded file exists and has content
             if not tmp_path.exists() or tmp_path.stat().st_size == 0:
-                raise PyaspError("Downloaded file is empty or missing")
+                raise PyASPError("Downloaded file is empty or missing")
 
             logger.info("Download complete. Extracting files...")
 
@@ -130,23 +130,23 @@ def download_asp_binaries():
                 with tarfile.open(tmp_path, "r:bz2") as tar:
                     tar.extractall(path=home)
             except tarfile.ReadError as e:
-                raise PyaspError(f"Failed to extract archive: {e}")
+                raise PyASPError(f"Failed to extract archive: {e}") from e
 
             # Find extracted directory
             asp_dirs = list(home.glob("StereoPipeline*"))
             if not asp_dirs:
-                raise PyaspError("Failed to extract ASP binaries")
+                raise PyASPError("Failed to extract ASP binaries")
 
             bin_dir = asp_dirs[0] / "bin"
             if not bin_dir.exists():
-                raise PyaspError("Binary directory not found in extracted files")
+                raise PyASPError("Binary directory not found in extracted files")
 
             return bin_dir
 
     except requests.RequestException as e:
-        raise PyaspError(f"Download failed: {e}")
+        raise PyASPError(f"Download failed: {e}") from e
     except Exception as e:
-        raise PyaspError(f"Failed to download ASP binaries: {e}")
+        raise PyASPError(f"Failed to download ASP binaries: {e}") from e
 
 
 # Check if ASP binaries exist in PATH, otherwise download and add them
@@ -154,10 +154,7 @@ if not check_asp_binary():
     try:
         # Try to find ASP binaries in home directory
         bin_paths = list(Path.home().glob("StereoPipeline*/bin"))
-        if bin_paths:
-            ASP_PATH = bin_paths[0]
-        else:
-            ASP_PATH = None
+        ASP_PATH = bin_paths[0] if bin_paths else None
 
         if not ASP_PATH:
             logger.info("ASP binaries not found. Downloading latest release...")
@@ -168,10 +165,10 @@ if not check_asp_binary():
             if check_asp_binary():
                 logger.info(f"ASP binaries added to PATH: {ASP_PATH}")
             else:
-                raise PyaspError("Failed to add ASP binaries to PATH")
+                raise PyASPError("Failed to add ASP binaries to PATH")
         else:
-            raise PyaspError("AmesStereoPipeline binaries not found. ")
-    except PyaspError as e:
+            raise PyASPError("AmesStereoPipeline binaries not found. ")
+    except PyASPError as e:
         logger.warning(
             f"{e}. Please add them manually with 'pyasp.add_asp_binary(`Path/to/asp/binaries`)'."
         )

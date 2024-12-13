@@ -4,12 +4,11 @@ import logging
 import subprocess
 import sys
 import time
-from typing import List
 
 logger = logging.getLogger("pyasp")
 
 
-def cmd_list_to_string(cmd_list: List[str]) -> str:
+def cmd_list_to_string(cmd_list: list[str]) -> str:
     """
     Convert a list of command arguments to a single string.
 
@@ -34,7 +33,7 @@ def cmd_list_to_string(cmd_list: List[str]) -> str:
     return " ".join(cmd_list)
 
 
-def cmd_string_to_list(cmd_str: str) -> List[str]:
+def cmd_string_to_list(cmd_str: str) -> list[str]:
     """
     Convert a command string to a list of arguments.
 
@@ -66,7 +65,7 @@ class OutputCapture:
         sys.stdout.flush()
 
 
-def run_command(command: List[str] | str, silent: bool = False) -> bool:
+def run_command(command: list[str] | str, silent: bool = False) -> bool:
     """
     Run a shell command, capture output in real time, and handle errors.
 
@@ -86,9 +85,7 @@ def run_command(command: List[str] | str, silent: bool = False) -> bool:
         raise TypeError("command must be a list of strings or a single string")
 
     if silent:
-        subprocess.run(
-            command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        subprocess.run(command, check=True, capture_output=True)
         return True
 
     logger.debug(f"Executing command: {command}")
@@ -117,7 +114,7 @@ def run_command(command: List[str] | str, silent: bool = False) -> bool:
 
             raise RuntimeError(
                 f"Command {command[0]} failed with error code {e.returncode}: {error_message}"
-            )
+            ) from e
 
         end_time = time.perf_counter()
         total_time = end_time - start_time
@@ -238,7 +235,6 @@ class Command:
             if isinstance(value, bool) and value is False:
                 continue
 
-            # If a key has an empty string value, add the key without a value
             if isinstance(value, str) and value == "":
                 self.cmd.append(f"{key}")
                 continue
@@ -248,8 +244,9 @@ class Command:
                 continue
 
             # Handle the case where the value is a list or tuple
-            if isinstance(value, list) or isinstance(value, tuple):
-                self.cmd.extend([f"{key}", *map(str, value)])
+            if isinstance(value, list | tuple):
+                for val in value:
+                    self.cmd.extend([f"{key}", str(val)])
                 continue
 
             # Add the key and value as separate arguments
@@ -323,7 +320,7 @@ class Command:
 
         return parameters
 
-    def get_positional_arguments(self) -> List[str]:
+    def get_positional_arguments(self) -> list[str]:
         """
         Returns a list of positional arguments.
 
