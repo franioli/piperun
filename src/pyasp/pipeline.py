@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -104,7 +105,6 @@ class DelayedTask:
         self._task.visualize(filename)
 
 
-# TODO: Check why ParallelBlock is initializating with existing steps when a previous instance has been created before (even if it has been closed and deleted)
 class ParallelBlock:
     """A parallel block of pipeline steps using Dask for distributed execution.
 
@@ -129,6 +129,9 @@ class ParallelBlock:
             steps: List or dictionary of pipeline steps to run in parallel.
             workers: Number of Dask workers to use. If None, uses all available cores.
         """
+
+        self._steps = []  # Initialize an empty list of steps
+
         if steps is None:
             steps = []
         elif isinstance(steps, dict):
@@ -141,7 +144,7 @@ class ParallelBlock:
         self._client = None
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__} with parallel steps: {self.steps}"
+        return f"{self.__class__.__name__} with parallel steps: {self._steps}"
 
     def _setup_dask(self):
         """Set up the Dask distributed client."""
@@ -151,7 +154,7 @@ class ParallelBlock:
             f"Dask client started with {self._workers or cluster.n_workers} workers."
         )
 
-    def add_step(self, step: AspStepBase | Command):
+    def add_step(self, step: AspStepBase | Command | DelayedTask):
         """Add a step to the parallel block.
 
         Args:
@@ -160,7 +163,7 @@ class ParallelBlock:
         Raises:
             TypeError: If step is not of allowed type.
         """
-        if not isinstance(step, AspStepBase | Command):
+        if not isinstance(step, AspStepBase | Command | DelayedTask):
             raise TypeError(
                 f"Invalid {step} in steps. Allowed steps are AspStepBase or Command."
             )
@@ -173,30 +176,48 @@ class ParallelBlock:
         Args:
             parallel_count: Number of steps to run in parallel. If None, uses number of Dask workers.
         """
-        if self._client is None:
-            self._setup_dask()
 
-        if parallel_count is None:
-            parallel_count = self._workers or len(self._steps)
-
-        logger.info(f"Starting parallel execution with {parallel_count} processes...")
-
-        def run_step(step):
+        def _run_step(step):
             logger.info(f"Running step: {step}")
             step.run()
             return step
 
-        futures = []
-        for i in range(0, len(self._steps), parallel_count):
-            batch = self._steps[i : i + parallel_count]
-            futures.extend(self._client.map(run_step, batch))
+        if not self._steps:
+            logger.info("No steps to run in the parallel block.")
+            return
 
-        results = self._client.gather(futures)
+        if parallel_count:
+            self._workers = parallel_count
+        elif self._workers is None:
+            self._workers = min(os.cpu_count(), len(self._steps))
 
-        for result in results:
-            logger.info(f"Completed step: {result}")
+        logger.info(f"Starting parallel execution with {self._workers} processes...")
 
-        self.close()
+        delayed_tasks = [step for step in self._steps if isinstance(step, DelayedTask)]
+        non_delayed_tasks = [
+            step for step in self._steps if not isinstance(step, DelayedTask)
+        ]
+
+        if delayed_tasks:
+            # Use Dask to manage parallelization for DelayedTasks
+            delayed_results = [task._task for task in delayed_tasks]
+            dask.compute(*delayed_results)
+        if non_delayed_tasks:
+            # Use Dask distributed for non-DelayedTask steps
+
+            if self._client is None:
+                self._setup_dask()
+
+            futures = []
+            for i in range(0, len(non_delayed_tasks), self._workers):
+                batch = non_delayed_tasks[i : i + self._workers]
+                futures.extend(self._client.map(_run_step, batch))
+            results = self._client.gather(futures)
+
+            for result in results:
+                logger.info(f"Completed step: {result}")
+
+            self.close()
 
         logger.info("Finished running the parallel block.\n")
         logger.info("---------------------------------------------\n")
@@ -229,6 +250,8 @@ class Pipeline:
         Args:
             steps: List or dictionary of pipeline steps to execute.
         """
+        self._steps = []  #  Initialize an empty list of steps
+
         if isinstance(steps, dict):
             steps = [step for step in steps.values()]
 
@@ -245,6 +268,10 @@ class Pipeline:
         return len(self.steps)
 
     def __getitem__(self, key: int) -> Any:
+        if key >= len(self.steps):
+            raise IndexError(
+                f"Invalid step number {key}. Must be less than {len(self.steps)}."
+            )
         return self.steps[key]
 
     @property
@@ -280,10 +307,10 @@ class Pipeline:
             step_number: Index of the step to remove.
 
         Raises:
-            Exception: If step_number is out of range.
+            IndexError: If step_number is out of range.
         """
         if step_number >= len(self._steps):
-            raise Exception(
+            raise IndexError(
                 f"Invalid step number {step_number}. Must be less than {len(self._steps)}."
             )
         self._steps.pop(step_number)
@@ -297,10 +324,10 @@ class Pipeline:
             new_step: New step to insert at the specified index.
 
         Raises:
-            Exception: If step_number is out of range.
+            IndexError: If step_number is out of range.
         """
         if step_number >= len(self._steps):
-            raise Exception(
+            raise IndexError(
                 f"Invalid step number {step_number}. Must be less than {len(self._steps)}."
             )
         self._steps[step_number] = new_step
@@ -330,10 +357,10 @@ class Pipeline:
             step_number: Index of the step to run.
 
         Raises:
-            Exception: If step_number is out of range.
+            IndexError: If step_number is out of range.
         """
         if step_number >= len(self._steps):
-            raise Exception(
+            raise IndexError(
                 f"Invalid step number {step_number}. Must be less than {len(self._steps)}."
             )
 
@@ -350,10 +377,10 @@ class Pipeline:
             step_number: Index of the step to start from.
 
         Raises:
-            Exception: If step_number is out of range.
+            IndexError: If step_number is out of range.
         """
         if step_number >= len(self._steps):
-            raise Exception(
+            raise IndexError(
                 f"Invalid step number {step_number}. Must be less than {len(self._steps)}."
             )
 
@@ -377,10 +404,10 @@ class Pipeline:
             step_number: Index of the step to run until. The pipeline will run up to this step (not including).
 
         Raises:
-            Exception: If step_number is out of range.
+            IndexError: If step_number is out of range.
         """
         if step_number >= len(self._steps):
-            raise Exception(
+            raise IndexError(
                 f"Invalid step number {step_number}. Must be less than {len(self._steps)}."
             )
 
