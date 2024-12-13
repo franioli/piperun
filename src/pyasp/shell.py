@@ -256,7 +256,7 @@ class Command:
                 continue
 
             # Convert single elements to string and append to the command
-            self.cmd.append(str(arg))
+            self.cmd.extend([str(arg)])
 
         # Extend the command with additional keyword arguments
         for key, value in kwargs.items():
@@ -270,21 +270,21 @@ class Command:
             # Handle boolean flags
             # If the value is a boolean and is True, add the key as a flag
             if is_boolean(value) and value is True:
-                self.cmd.append(format_key(key))
+                self.cmd.extend([format_key(key)])
                 continue
             # If the value is a boolean and is False, add the key as a flag
             if is_boolean(value) and value is False:
                 logger.info(
                     f"Adding key {key} with value 'false'. Check if this is the correct behavior."
                 )
-                self.cmd.append([format_key(key), "false"])
+                self.cmd.extend([format_key(key), "false"])
                 continue
             # If the value is an empty string, add the key as a flag
             if is_empty_string(value):
                 logger.info(
                     f"Adding key {key} with value ''. Check if this is the correct behavior."
                 )
-                self.cmd.append(format_key(key))
+                self.cmd.extend([format_key(key)])
                 continue
 
             # Handle the case where the value is a list or tuple
