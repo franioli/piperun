@@ -41,6 +41,9 @@ ignore = ["E501"]
 fixable = ["ALL"]
 unfixable = []
 
+# Sort imports in a deterministic order.
+extend-select = ["I"]
+
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
