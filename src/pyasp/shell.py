@@ -262,7 +262,7 @@ class Command:
         for key, value in kwargs.items():
             # Key with no value -> Skip it
             if value is None:
-                logger.info(
+                logger.debug(
                     f"Skipping key {key} with no value. Check if this is the correct behavior."
                 )
                 continue
@@ -274,14 +274,14 @@ class Command:
                 continue
             # If the value is a boolean and is False, add the key as a flag
             if is_boolean(value) and value is False:
-                logger.info(
+                logger.debug(
                     f"Adding key {key} with value 'false'. Check if this is the correct behavior."
                 )
                 self.cmd.extend([format_key(key), "false"])
                 continue
             # If the value is an empty string, add the key as a flag
             if is_empty_string(value):
-                logger.info(
+                logger.debug(
                     f"Adding key {key} with value ''. Check if this is the correct behavior."
                 )
                 self.cmd.extend([format_key(key)])
