@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyasp"
-version = "0.0.3"
+version = "0.0.4"
 description = "Python package for Ames Stereo Pipeline processing"
 readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
@@ -75,7 +75,7 @@ testpaths = ["tests"]
 
 
 [tool.bumpver]
-current_version = "0.0.3"
+current_version = "0.0.4"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true

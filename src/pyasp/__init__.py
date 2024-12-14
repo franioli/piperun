@@ -16,7 +16,7 @@ from .pipeline import DelayedTask, ParallelBlock, Pipeline
 from .shell import Command
 from .utils.timer import Timer
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 
 class PyASPError(Exception):
