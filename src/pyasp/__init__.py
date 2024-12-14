@@ -7,11 +7,13 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
+# Import submodules
 from . import steps, utils
+
+# Import classes and functions
 from .path_manager import PathManager
 from .pipeline import DelayedTask, ParallelBlock, Pipeline
 from .shell import Command
-from .utils.logger import setup_logger
 from .utils.timer import Timer
 
 __version__ = "0.0.3"
@@ -38,7 +40,7 @@ def setup_pyasp_logger(
         logging.Logger: The reconfigured 'pyasp' logger.
     """
     log_folder = log_folder if log_to_file else None
-    return setup_logger(
+    return utils.logger.setup_logger(
         name="pyasp",
         level=log_level,
         log_to_file=log_to_file,
@@ -57,10 +59,7 @@ def check_asp_binary():
     Returns:
         bool: True if the ASP binaries are in the PATH, False otherwise.
     """
-    if shutil.which("parallel_stereo") is not None:
-        return True
-    else:
-        return False
+    return shutil.which("parallel_stereo") is not None
 
 
 def add_asp_binary(path: Path) -> bool:

@@ -468,7 +468,7 @@ if __name__ == "__main__":
     import tempfile
 
     from pyasp import steps
-    from pyasp.spot5 import get_spot5_scenes
+    from pyasp.spot5.spot5 import get_spot5_scenes
 
     data_dir = Path("demo/data")
     seed_dem = data_dir / "COP-DEM_GLO-30-DGED_2023_1_4326_ellipsoid.tif"
