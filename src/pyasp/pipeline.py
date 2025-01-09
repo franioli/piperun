@@ -7,8 +7,8 @@ from typing import Any
 import dask
 from dask.distributed import Client, LocalCluster
 
+from pyasp.asp import AspStepBase
 from pyasp.shell import Command
-from pyasp.steps import AspStepBase
 
 logger = logging.getLogger("pyasp")
 
@@ -467,7 +467,7 @@ class Pipeline:
 if __name__ == "__main__":
     import tempfile
 
-    from pyasp import steps
+    from pyasp import asp
     from pyasp.spot5.spot5 import get_spot5_scenes
 
     data_dir = Path("demo/data")
@@ -486,10 +486,10 @@ if __name__ == "__main__":
         pl = Pipeline()
 
         for f in rpc:
-            pl.add_step(steps.AddSpotRPC(f))
+            pl.add_step(asp.AddSpotRPC(f))
 
         pl.add_step(
-            steps.BundleAdjust(
+            asp.BundleAdjust(
                 images=images,
                 cameras=rpc,
                 output_prefix="ba",
@@ -509,7 +509,7 @@ if __name__ == "__main__":
             model = scene / f"METADATA_{i}.DIM"
             output = temp_dir / f"mapproject_{i}.tif"
             pl.add_step(
-                steps.MapProject(
+                asp.MapProject(
                     dem=seed_dem,
                     camera_image=image,
                     camera_model=model,
@@ -524,7 +524,7 @@ if __name__ == "__main__":
             mapproj_imgs.append(output)
 
         pl.add_step(
-            steps.ParallelStereo(
+            asp.ParallelStereo(
                 images=mapproj_imgs,
                 cameras=rpc,
                 dem=seed_dem,
@@ -543,10 +543,10 @@ if __name__ == "__main__":
         pl.run()
 
         # Test ParallelBlock
-        pb = ParallelBlock([steps.AddSpotRPC(f) for f in rpc], workers=2)
+        pb = ParallelBlock([asp.AddSpotRPC(f) for f in rpc], workers=2)
         pb.run()
 
         # Test Pipeline with ParallelBlock
         pl = Pipeline()
-        pl.add_step(ParallelBlock([steps.AddSpotRPC(f) for f in rpc], workers=2))
+        pl.add_step(ParallelBlock([asp.AddSpotRPC(f) for f in rpc], workers=2))
         pl.run()

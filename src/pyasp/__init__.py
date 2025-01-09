@@ -8,7 +8,7 @@ import requests
 from tqdm import tqdm
 
 # Import submodules
-from . import steps, utils
+from . import asp, utils
 
 # Import classes and functions
 from .path_manager import PathManager
