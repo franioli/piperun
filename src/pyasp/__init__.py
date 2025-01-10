@@ -48,7 +48,7 @@ def setup_pyasp_logger(
     )
 
 
-logger = setup_pyasp_logger(log_level="info", log_to_file=True, log_folder="./logs")
+logger = setup_pyasp_logger(log_level="info", log_to_file=True, log_folder="./.logs")
 timer = Timer(logger=logger)
 
 
