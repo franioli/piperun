@@ -8,7 +8,7 @@ import requests
 from tqdm import tqdm
 
 # Import submodules
-from . import asp, utils
+from . import asp, postproc, preproc, spot5, thirdparty, utils
 
 # Import classes and functions
 from .path_manager import PathManager
