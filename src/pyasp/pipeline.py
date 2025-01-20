@@ -143,6 +143,15 @@ class ParallelBlock:
         self._workers = workers
         self._client = None
 
+    def __enter__(self):
+        """Enter the context manager, initializing the Dask cluster and client."""
+        self._setup_dask()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager, closing the Dask client and cluster."""
+        self.close()
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__} with parallel steps: {self._steps}"
 
@@ -216,8 +225,6 @@ class ParallelBlock:
 
             for result in results:
                 logger.info(f"Completed step: {result}")
-
-            self.close()
 
         logger.info("Finished running the parallel block.\n")
         logger.info("---------------------------------------------\n")
