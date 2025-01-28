@@ -142,7 +142,7 @@ class Command:
     def __init__(
         self,
         cmd: str | list[str],
-        name: str = "Command",
+        name: str = None,
         silent: bool = False,
         **kwargs,
     ):
@@ -151,7 +151,7 @@ class Command:
 
         Args:
             cmd (str | list[str]): The base command as a string or a list of strings.
-            name (str, optional): The name of the command. Default is "Command".
+            name (str, optional): The name of the command. Default is None.
             silent (bool, optional): Suppress output if True. Default is False.
             **kwargs: Additional keyword arguments for command execution.
 
@@ -165,7 +165,10 @@ class Command:
         else:
             raise TypeError("cmd must be a list of strings or a single string")
         self.cmd = cmd
-        self.name = name
+        if name is not None:
+            self.name = name
+        else:
+            self.name = cmd[0]
         self.silent = silent
         self.kwargs = kwargs
 
@@ -298,14 +301,15 @@ class Command:
             except Exception as e:
                 raise ValueError(f"Invalid key: {key}") from e
 
-    def run(self):
+    def run(self, silent: bool = False) -> bool:
         """
         Runs the command using the run_command function.
 
         Additional arguments from kwargs are passed to the run_command function.
         """
         start_time = time.perf_counter()
-        ret = run_command(self.cmd, silent=self.silent)
+        silent = silent or self.silent
+        ret = run_command(self.cmd, silent=silent)
         self._elaspsed_time = time.perf_counter() - start_time
 
         logger.info(f"Command {self.name} took {self._elaspsed_time:.4f}s.")
