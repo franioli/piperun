@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import tarfile
@@ -26,7 +27,9 @@ class PyASPError(Exception):
 
 
 def setup_pyasp_logger(
-    log_level: str, log_to_file: bool = True, log_folder: Path = "./.logs"
+    log_level: str | int = logging.INFO,
+    log_to_file: bool = True,
+    log_folder: Path = "./.logs",
 ):
     """
     Reconfigures the 'pyasp' logger with new parameters by calling setup_logger.
@@ -39,6 +42,7 @@ def setup_pyasp_logger(
     Returns:
         logging.Logger: The reconfigured 'pyasp' logger.
     """
+
     log_folder = log_folder if log_to_file else None
     return utils.logger.setup_logger(
         name="pyasp",
