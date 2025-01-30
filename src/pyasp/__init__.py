@@ -26,8 +26,9 @@ class PyASPError(Exception):
     pass
 
 
-def setup_pyasp_logger(
-    log_level: str | int = logging.INFO,
+def setup_logger(
+    level: str | int = logging.INFO,
+    name="pyasp",
     log_to_file: bool = True,
     log_folder: Path = "./.logs",
 ):
@@ -35,24 +36,35 @@ def setup_pyasp_logger(
     Reconfigures the 'pyasp' logger with new parameters by calling setup_logger.
 
     Args:
-        log_level (str): The logging level (e.g., 'info', 'debug', 'warning').
-        log_to_file (bool, optional): Whether to log to a file.
-        log_file_path (Path, optional): Path to the directory for the log file if log_to_file is True. Defaults to "./.logs".
+        level (str | int): The logging level (e.g., 'info', 'debug', 'warning').
+        name (str): The name of the logger.
+        log_to_file (bool, optional): Whether to log to a file. Defaults to True.
+        log_folder (Path, optional): Path to the directory for the log file if log_to_file is True. Defaults to "./.logs".
 
     Returns:
         logging.Logger: The reconfigured 'pyasp' logger.
-    """
 
-    log_folder = log_folder if log_to_file else None
+    Example:
+        >>> import logging
+        >>> from pyasp import setup_logger
+        >>> logger = setup_logger(level=logging.DEBUG, log_to_file=False)
+        >>> logger.debug("This is a debug message")
+    """
     return utils.logger.setup_logger(
-        name="pyasp",
-        level=log_level,
+        level=level,
+        name=name,
         log_to_file=log_to_file,
         log_folder=log_folder,
     )
 
 
-logger = setup_pyasp_logger(log_level="info")
+# Setup logger and timer for the package
+logger = setup_logger(
+    level=logging.INFO,
+    name="pyasp",
+    log_to_file=True,
+    log_folder="./.logs",
+)
 timer = Timer(logger=logger)
 
 
