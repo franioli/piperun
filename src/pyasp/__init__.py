@@ -7,6 +7,7 @@ from pathlib import Path
 
 import requests
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 # Import submodules
 from . import asp, postproc, preproc, spot5, thirdparty, utils
@@ -127,10 +128,11 @@ def download_asp_binaries():
             response = requests.get(download_url, stream=True)
             total_size = int(response.headers.get("content-length", 0))
 
-            with open(tmp_path, "wb") as f:
-                with tqdm(total=total_size, unit="iB", unit_scale=True) as pbar:
-                    for data in response.iter_content(chunk_size=8192):
-                        size = f.write(data)
+            with logging_redirect_tqdm([logger]):
+                with open(tmp_path, "wb") as f:
+                    with tqdm(total=total_size, unit="iB", unit_scale=True) as pbar:
+                        for data in response.iter_content(chunk_size=8192):
+                            size = f.write(data)
                         pbar.update(size)
 
             # Verify the downloaded file exists and has content
