@@ -10,7 +10,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 # Import submodules
-from . import asp, postproc, preproc, spot5, thirdparty, utils
+from . import asp, preproc, spot5, thirdparty, utils
 
 # Import classes and functions
 from .path_manager import PathManager
@@ -31,7 +31,7 @@ def setup_logger(
     level: str | int = logging.INFO,
     name="pyasp",
     log_to_file: bool = True,
-    log_folder: Path = "./.logs",
+    log_folder: Path | str = "./.logs",
 ):
     """
     Reconfigures the 'pyasp' logger with new parameters by calling setup_logger.
