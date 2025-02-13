@@ -24,7 +24,6 @@ dependencies = [
     "matplotlib",
     "pandas",
     "opencv-python",
-    #"opencv-contrib-python",
     "rasterio",
     "pyproj",
     "tqdm",
@@ -38,6 +37,7 @@ dependencies = [
     "shapely",
     "seaborn",
     "graphviz",
+    "hydra-core",
 ]
 
 [project.urls]
