@@ -29,7 +29,6 @@ dependencies = [
     "tqdm",
     "xdem",
     "geoutils",
-    "omegaconf",
     "pytransform3d",
     "dask[distributed]",
     "requests",
@@ -38,12 +37,16 @@ dependencies = [
     "seaborn",
     "graphviz",
     "hydra-core",
+    "contextily",
 ]
 
 [project.urls]
 Homepage = "https://github.com/RSE-UZH/pyasp"
 Documentation = "https://github.com/RSE-UZH/pyasp/"
 Repository = "https://github.com/RSE-UZH/pyasp"
+
+[project.scripts]
+pyasp = "pyasp.__main__:main"
 
 [project.optional-dependencies]
 asp-plot = ["fiona", "matplotlib-scalebar", "contextily", "markdown-pdf"]
