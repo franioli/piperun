@@ -7,7 +7,6 @@ from typing import Any
 import dask
 from dask.distributed import Client, LocalCluster
 
-from pyasp.asp import AspStepBase
 from pyasp.shell import Command
 
 logger = logging.getLogger("pyasp")
@@ -163,18 +162,18 @@ class ParallelBlock:
             f"Dask client started with {self._workers or cluster.n_workers} workers."
         )
 
-    def add_step(self, step: AspStepBase | Command | DelayedTask):
+    def add_step(self, step: Command | DelayedTask):
         """Add a step to the parallel block.
 
         Args:
-            step: Pipeline step to add (must be AspStepBase or Command).
+            step: Pipeline step to add (must be Command or DelayedTask).
 
         Raises:
             TypeError: If step is not of allowed type.
         """
-        if not isinstance(step, AspStepBase | Command | DelayedTask):
+        if not isinstance(step, Command | DelayedTask):
             raise TypeError(
-                f"Invalid {step} in steps. Allowed steps are AspStepBase or Command."
+                f"Invalid {step} in steps. Allowed steps are Command or DelayedTask."
             )
         self._steps.append(step)
 
@@ -240,7 +239,7 @@ class ParallelBlock:
 class Pipeline:
     """A pipeline for executing sequential processing steps.
 
-    Manages a sequence of processing steps that can include AspStepBase, Command,
+    Manages a sequence of processing steps that can include Command or DelayedTask objects,
     ParallelBlock, or nested Pipeline objects.
 
     Attributes:
@@ -294,16 +293,14 @@ class Pipeline:
         """Add a step to the pipeline.
 
         Args:
-            step: Step to add (must be DelayedTask, Command, ParallelBlock, Pipeline, or AspStepBase).
+            step: Step to add (must be DelayedTask, Command, ParallelBlock, Pipeline).
 
         Raises:
             TypeError: If step is not of allowed type.
         """
-        if not isinstance(
-            step, DelayedTask | Command | ParallelBlock | Pipeline | AspStepBase
-        ):
+        if not isinstance(step, DelayedTask | Command | ParallelBlock | Pipeline):
             raise TypeError(
-                f"Invalid {step} in steps. Allowed steps are AspStepBase, Command, Pipeline, or ParallelBlock."
+                f"Invalid {step} in steps. Allowed steps are DelayedTask, Command, Pipeline, or ParallelBlock."
             )
         self._steps.append(step)
 
