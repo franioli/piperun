@@ -10,7 +10,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 # Import submodules
-from . import asp, preproc, spot5, thirdparty, utils, workflows
+from . import asp, config, preproc, spot5, thirdparty, utils, workflows
 
 # Import classes and functions
 from .path_manager import PathManager
