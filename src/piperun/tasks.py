@@ -1,12 +1,8 @@
 import logging
-import os
 import time
 from typing import Any
 
 import dask
-from dask.distributed import Client, LocalCluster
-
-from piperun.shell import Command
 
 logger = logging.getLogger("piperun")
 
@@ -101,4 +97,3 @@ class DelayedTask:
             filename (str): Path where the visualization will be saved.
         """
         self._task.visualize(filename)
-
