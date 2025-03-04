@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 
-logger = logging.getLogger("pyasp")
+logger = logging.getLogger("piperun")
 
 
 def cmd_list_to_string(cmd_list: list[str]) -> str:

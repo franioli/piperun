@@ -7,9 +7,9 @@ from typing import Any
 import dask
 from dask.distributed import Client, LocalCluster
 
-from pyasp.shell import Command
+from piperun.shell import Command
 
-logger = logging.getLogger("pyasp")
+logger = logging.getLogger("piperun")
 
 
 class DelayedTask:
