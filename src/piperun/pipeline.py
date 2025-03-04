@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from pathlib import Path
 from typing import Any
 
@@ -8,232 +7,9 @@ import dask
 from dask.distributed import Client, LocalCluster
 
 from piperun.shell import Command
+from piperun.tasks import DelayedTask
 
 logger = logging.getLogger("piperun")
-
-
-class DelayedTask:
-    """A class to handle delayed task execution using Dask.
-
-    This class wraps a callable task and provides utilities for delayed execution,
-    timing measurement, and visualization using Dask's delayed functionality.
-
-    Attributes:
-        _elapsed_time (float): Time taken for the last task execution in seconds.
-        _task (dask.delayed): The wrapped Dask delayed task object.
-
-    Example:
-        >>> def my_task(x):
-        ...     return x * 2
-        >>> delayed = DelayedTask(my_task, 5)
-        >>> result = delayed.compute()
-    """
-
-    _elaspsed_time = None
-    _task = None
-
-    def __init__(
-        self,
-        task: callable,
-        *args,
-        **kwargs,
-    ):
-        """Initialize a DelayedTask instance.
-
-        Args:
-            task (callable): The function to be executed.
-            *args: Variable length argument list for the task.
-            **kwargs: Arbitrary keyword arguments for the task.
-
-        Raises:
-            ValueError: If task is not callable.
-        """
-        if not callable(task):
-            raise ValueError(
-                "Invalid task argument. Task must be a callable function (or a dask delayed object)."
-            )
-        self._task = dask.delayed(task)(*args, **kwargs)
-
-    def __repr__(self):
-        """Return string representation of the DelayedTask.
-
-        Returns:
-            str: String representation including class name and task.
-        """
-        return f"{self.__class__.__name__}: {self._task}"
-
-    @property
-    def elapsed_time(self) -> float:
-        """Get the elapsed time of the last command execution.
-
-        Returns:
-            float: The elapsed time in seconds. None if not executed yet.
-        """
-        if self._elaspsed_time is None:
-            logger.info("The step has not been executed yet.")
-        return self._elaspsed_time
-
-    def compute(self) -> Any:
-        """Execute the delayed task and measure execution time.
-
-        Returns:
-            Any: Result of the computed task.
-        """
-        start_time = time.perf_counter()
-        ret = self._task.compute()
-        self._elaspsed_time = time.perf_counter() - start_time
-        logger.info(
-            f"Command {self.__class__.__name__} took {self._elaspsed_time:.4f} s."
-        )
-        return ret
-
-    def run(self):
-        """Alias for compute() method.
-
-        Returns:
-            Any: Result of the computed task.
-        """
-        return self.compute()
-
-    def visualize(self, filename):
-        """Visualize the task graph using Dask's visualization.
-
-        Args:
-            filename (str): Path where the visualization will be saved.
-        """
-        self._task.visualize(filename)
-
-
-class ParallelBlock:
-    """A parallel block of pipeline steps using Dask for distributed execution.
-
-    Allows running multiple pipeline steps in parallel using Dask distributed computing.
-
-    Attributes:
-        _steps (list): List of pipeline steps to be executed in parallel.
-        _workers (int): Number of Dask workers to use.
-        _client (Client): Dask distributed client instance.
-    """
-
-    _steps = []
-
-    def __init__(
-        self,
-        steps: list[Any] | dict[str, Any] = None,
-        workers: int = None,
-    ):
-        """Initialize a ParallelBlock instance.
-
-        Args:
-            steps: List or dictionary of pipeline steps to run in parallel.
-            workers: Number of Dask workers to use. If None, uses all available cores.
-        """
-
-        self._steps = []  # Initialize an empty list of steps
-
-        if steps is None:
-            steps = []
-        elif isinstance(steps, dict):
-            steps = [step for step in steps.values()]
-
-        for step in steps:
-            self.add_step(step)
-
-        self._workers = workers
-        self._client = None
-
-    def __enter__(self):
-        """Enter the context manager, initializing the Dask cluster and client."""
-        self._setup_dask()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager, closing the Dask client and cluster."""
-        self.close()
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__} with parallel steps: {self._steps}"
-
-    def _setup_dask(self):
-        """Set up the Dask distributed client."""
-        cluster = LocalCluster(n_workers=self._workers)
-        self._client = Client(cluster)
-        logger.info(
-            f"Dask client started with {self._workers or cluster.n_workers} workers."
-        )
-
-    def add_step(self, step: Command | DelayedTask):
-        """Add a step to the parallel block.
-
-        Args:
-            step: Pipeline step to add (must be Command or DelayedTask).
-
-        Raises:
-            TypeError: If step is not of allowed type.
-        """
-        if not isinstance(step, Command | DelayedTask):
-            raise TypeError(
-                f"Invalid {step} in steps. Allowed steps are Command or DelayedTask."
-            )
-        self._steps.append(step)
-
-    def run(self, parallel_count: int = None):
-        """
-        Run the steps in parallel using Dask.
-
-        Args:
-            parallel_count: Number of steps to run in parallel. If None, uses number of Dask workers.
-        """
-
-        def _run_step(step):
-            logger.info(f"Running step: {step}")
-            step.run()
-            return step
-
-        if not self._steps:
-            logger.info("No steps to run in the parallel block.")
-            return
-
-        if parallel_count:
-            self._workers = parallel_count
-        elif self._workers is None:
-            self._workers = min(os.cpu_count(), len(self._steps))
-
-        logger.info(f"Starting parallel execution with {self._workers} processes...")
-
-        delayed_tasks = [step for step in self._steps if isinstance(step, DelayedTask)]
-        non_delayed_tasks = [
-            step for step in self._steps if not isinstance(step, DelayedTask)
-        ]
-
-        if delayed_tasks:
-            # Use Dask to manage parallelization for DelayedTasks
-            delayed_results = [task._task for task in delayed_tasks]
-            dask.compute(*delayed_results)
-        if non_delayed_tasks:
-            # Use Dask distributed for non-DelayedTask steps
-
-            if self._client is None:
-                self._setup_dask()
-
-            futures = []
-            for i in range(0, len(non_delayed_tasks), self._workers):
-                batch = non_delayed_tasks[i : i + self._workers]
-                futures.extend(self._client.map(_run_step, batch))
-            results = self._client.gather(futures)
-
-            for result in results:
-                logger.info(f"Completed step: {result}")
-
-        logger.info("Finished running the parallel block.\n")
-        logger.info("---------------------------------------------\n")
-
-    def close(self):
-        """Shut down the Dask client."""
-        if self._client:
-            self._client.close()
-            self._client = None
-            logger.info("Dask client shut down.")
 
 
 class Pipeline:
@@ -438,14 +214,6 @@ class Pipeline:
         """
         raise NotImplementedError("This method is not implemented yet.")
 
-        # config = {
-        #     "steps": [
-        #         OmegaConf.to_container(step, resolve=True) for step in self._steps
-        #     ]
-        # }
-        # with open(filename, "w") as file:
-        #     yaml.dump(config, file)
-
     @classmethod
     def from_yaml(cls, filename: Path):
         """Load a pipeline configuration from a YAML file.
@@ -461,96 +229,134 @@ class Pipeline:
         """
         raise NotImplementedError("This method is not implemented yet.")
 
-        # with open(filename, "r") as file:
-        #     config = yaml.safe_load(file)
 
-        # steps = [OmegaConf.create(step) for step in config["steps"]]
-        # return cls(steps=steps)
+class ParallelBlock:
+    """A parallel block of pipeline steps using Dask for distributed execution.
 
+    Allows running multiple pipeline steps in parallel using Dask distributed computing.
 
-if __name__ == "__main__":
-    import tempfile
+    Attributes:
+        _steps (list): List of pipeline steps to be executed in parallel.
+        _workers (int): Number of Dask workers to use.
+        _client (Client): Dask distributed client instance.
+    """
 
-    from pyasp import asp
-    from pyasp.spot5.spot5 import get_spot5_scenes
+    _steps = []
 
-    data_dir = Path("demo/data")
-    seed_dem = data_dir / "COP-DEM_GLO-30-DGED_2023_1_4326_ellipsoid.tif"
+    def __init__(
+        self,
+        steps: list[Any] | dict[str, Any] = None,
+        workers: int = None,
+    ):
+        """Initialize a ParallelBlock instance.
 
-    # Write the oputpus to a temporary directory
+        Args:
+            steps: List or dictionary of pipeline steps to run in parallel.
+            workers: Number of Dask workers to use. If None, uses all available cores.
+        """
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir = Path(temp_dir)
+        self._steps = []  # Initialize an empty list of steps
 
-        scenes, images, rpc = get_spot5_scenes(
-            image_dir=data_dir / "img", create_symlinks=True
+        if steps is None:
+            steps = []
+        elif isinstance(steps, dict):
+            steps = [step for step in steps.values()]
+
+        for step in steps:
+            self.add_step(step)
+
+        self._workers = workers
+        self._client = None
+
+    def __enter__(self):
+        """Enter the context manager, initializing the Dask cluster and client."""
+        self._setup_dask()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Exit the context manager, closing the Dask client and cluster."""
+        self.close()
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__} with parallel steps: {self._steps}"
+
+    def _setup_dask(self):
+        """Set up the Dask distributed client."""
+        cluster = LocalCluster(n_workers=self._workers)
+        self._client = Client(cluster)
+        logger.info(
+            f"Dask client started with {self._workers or cluster.n_workers} workers."
         )
 
-        # Test Pipeline
-        pl = Pipeline()
+    def add_step(self, step: Command | DelayedTask):
+        """Add a step to the parallel block.
 
-        for f in rpc:
-            pl.add_step(asp.AddSpotRPC(f))
+        Args:
+            step: Pipeline step to add (must be Command or DelayedTask).
 
-        pl.add_step(
-            asp.BundleAdjust(
-                images=images,
-                cameras=rpc,
-                output_prefix="ba",
-                t="rpc",
-                heights_from_dem=seed_dem,
-                heights_from_dem_uncertainty=30.0,
-                max_iterations=500,
-                ip_per_tile=150,
-                matches_per_tile=50,
-                datum="WGS_1984",
+        Raises:
+            TypeError: If step is not of allowed type.
+        """
+        if not isinstance(step, Command | DelayedTask):
+            raise TypeError(
+                f"Invalid {step} in steps. Allowed steps are Command or DelayedTask."
             )
-        )
+        self._steps.append(step)
 
-        mapproj_imgs = []
-        for i, scene in scenes.items():
-            image = scene / f"IMAGERY_{i}.TIF"
-            model = scene / f"METADATA_{i}.DIM"
-            output = temp_dir / f"mapproject_{i}.tif"
-            pl.add_step(
-                asp.MapProject(
-                    dem=seed_dem,
-                    camera_image=image,
-                    camera_model=model,
-                    output_image=output,
-                    bundle_adjust_prefix="ba",
-                    t="rpc",
-                    tr=9.0123960e-05,
-                    processes=8,
-                    threads=18,
-                )
-            )
-            mapproj_imgs.append(output)
+    def run(self, parallel_count: int = None):
+        """
+        Run the steps in parallel using Dask.
 
-        pl.add_step(
-            asp.ParallelStereo(
-                images=mapproj_imgs,
-                cameras=rpc,
-                dem=seed_dem,
-                output_file_prefix="stereo",
-                bundle_adjust_prefix="ba",
-                alignment_method="none",
-                stereo_algorithm="asp_sgm",
-                t="rpcmaprpc",
-                xcorr_threshold=2,
-                cost_mode=3,
-                corr_kernel=[9, 9],
-                subpixel_mode=2,
-                subpixel_kernel=[35, 35],
-            )
-        )
-        pl.run()
+        Args:
+            parallel_count: Number of steps to run in parallel. If None, uses number of Dask workers.
+        """
 
-        # Test ParallelBlock
-        pb = ParallelBlock([asp.AddSpotRPC(f) for f in rpc], workers=2)
-        pb.run()
+        def _run_step(step):
+            logger.info(f"Running step: {step}")
+            step.run()
+            return step
 
-        # Test Pipeline with ParallelBlock
-        pl = Pipeline()
-        pl.add_step(ParallelBlock([asp.AddSpotRPC(f) for f in rpc], workers=2))
-        pl.run()
+        if not self._steps:
+            logger.info("No steps to run in the parallel block.")
+            return
+
+        if parallel_count:
+            self._workers = parallel_count
+        elif self._workers is None:
+            self._workers = min(os.cpu_count(), len(self._steps))
+
+        logger.info(f"Starting parallel execution with {self._workers} processes...")
+
+        delayed_tasks = [step for step in self._steps if isinstance(step, DelayedTask)]
+        non_delayed_tasks = [
+            step for step in self._steps if not isinstance(step, DelayedTask)
+        ]
+
+        if delayed_tasks:
+            # Use Dask to manage parallelization for DelayedTasks
+            delayed_results = [task._task for task in delayed_tasks]
+            dask.compute(*delayed_results)
+        if non_delayed_tasks:
+            # Use Dask distributed for non-DelayedTask steps
+
+            if self._client is None:
+                self._setup_dask()
+
+            futures = []
+            for i in range(0, len(non_delayed_tasks), self._workers):
+                batch = non_delayed_tasks[i : i + self._workers]
+                futures.extend(self._client.map(_run_step, batch))
+            results = self._client.gather(futures)
+
+            for result in results:
+                logger.info(f"Completed step: {result}")
+
+        logger.info("Finished running the parallel block.\n")
+        logger.info("---------------------------------------------\n")
+
+    def close(self):
+        """Shut down the Dask client."""
+        if self._client:
+            self._client.close()
+            self._client = None
+            logger.info("Dask client shut down.")
