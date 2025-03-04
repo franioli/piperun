@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from pyasp.shell import (
+from piperun.shell import (
     Command,
     OutputCapture,
     cmd_list_to_string,

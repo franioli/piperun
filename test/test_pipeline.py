@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from pyasp.pipeline import DelayedTask, ParallelBlock, Pipeline
+from piperun.pipeline import DelayedTask, ParallelBlock, Pipeline
 
 
 def add(a, b):
