@@ -11,6 +11,12 @@ piperun simplifies the process of building complex command workflows by providin
 - Parallel processing capabilities
 - Integration with Dask for distributed computation
 
+## Installation
+
+```bash
+pip install piperun
+```
+
 ## Core Components
 
 ### Command
@@ -104,11 +110,7 @@ Features:
 - Configurable worker count
 - Support for both Command and DelayedTask objects
 
-## Installation
 
-```bash
-pip install piperun
-```
 
 ## Advanced Usage
 
