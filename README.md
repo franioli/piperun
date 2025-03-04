@@ -21,8 +21,16 @@ piperun was designed with the following principles in mind:
 
 ## Installation
 
+Install piperun using pip (not yet available):
 ```bash
 pip install piperun
+```
+
+Install from source in editable mode:
+```bash
+git clone https://github.com/franioli/piperun.git
+cd piperun
+pip install -e .
 ```
 
 ## Core Components
