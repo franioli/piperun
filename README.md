@@ -11,6 +11,14 @@ piperun simplifies the process of building complex command workflows by providin
 - Parallel processing capabilities
 - Integration with Dask for distributed computation
 
+piperun was designed with the following principles in mind:
+
+1. **Simplicity**: Easy to use with intuitive interfaces
+2. **Flexibility**: Works with any callable or command
+3. **Composability**: Build complex workflows from simple pieces
+4. **Performance**: Efficient execution with parallel processing capabilities
+5. **Control**: Detailed control over execution flow
+
 ## Installation
 
 ```bash
@@ -163,16 +171,6 @@ pipeline.run_from_step(2)
 # Run up to step 4 (not including step 4)
 pipeline.run_until_step(4)
 ```
-
-## Design Principles
-
-piperun was designed with the following principles in mind:
-
-1. **Simplicity**: Easy to use with intuitive interfaces
-2. **Flexibility**: Works with any callable or command
-3. **Composability**: Build complex workflows from simple pieces
-4. **Performance**: Efficient execution with parallel processing capabilities
-5. **Control**: Detailed control over execution flow
 
 ## Contributing
 
