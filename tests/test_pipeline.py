@@ -349,3 +349,7 @@ def test_invalid_step_type():
     pipe = Pipeline()
     with pytest.raises(TypeError):
         pipe.add_step("not a valid step")
+
+
+if __name__ == "__main__":
+    pytest.main()
