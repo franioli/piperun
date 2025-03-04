@@ -3,54 +3,31 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pyasp"
-version = "0.0.4"
-description = "Python package for Ames Stereo Pipeline processing"
+name = "piperun"
+version = "0.1.0"
+description = "A flexible framework for building and executing command pipelines in Python"
 readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
-maintainers = [
-    { name = "Remote sensing of Environmental Changes Group UZH", email = "francesco.ioli@geo.uzh.ch" },
-]
+maintainers = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-keywords = ["ASP", "DEM", "photogrammetry", "stereo"]
+keywords = ["pipeline", "command", "shell", "parallel", "task"]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: BSD License",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Shells",
 ]
-dependencies = [
-    "numpy<=2.0",
-    "matplotlib",
-    "pandas",
-    "opencv-python",
-    "rasterio",
-    "pyproj",
-    "tqdm",
-    "xdem",
-    "geoutils",
-    "pytransform3d",
-    "dask[distributed]",
-    "requests",
-    "geopandas",
-    "shapely",
-    "seaborn",
-    "graphviz",
-    "hydra-core",
-    "contextily",
-]
+dependencies = ["dask[distributed]", "graphviz"]
 
 [project.urls]
-Homepage = "https://github.com/RSE-UZH/pyasp"
-Documentation = "https://github.com/RSE-UZH/pyasp/"
-Repository = "https://github.com/RSE-UZH/pyasp"
-
-[project.scripts]
-pyasp = "pyasp.__main__:main"
+Homepage = "https://github.com/franioli/piperun"
+Documentation = "https://github.com/franioli/piperun/"
+Repository = "https://github.com/franioli/piperun"
 
 [project.optional-dependencies]
-asp-plot = ["fiona", "matplotlib-scalebar", "contextily", "markdown-pdf"]
-
 dev = [
     "ruff",
     "bumpver",
@@ -61,12 +38,10 @@ dev = [
     "mkdocs-material",
     "mkdocstrings[python]",
     "pre-commit",
-    "icecream",
 ]
-all = ["pyasp[asp-plot,dev]"]
 
 [tool.hatch]
-version.path = "src/pyasp/__init__.py"
+version.path = "src/piperun/__init__.py"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -76,9 +51,8 @@ filterwarnings = ["error"]
 log_cli_level = "info"
 testpaths = ["tests"]
 
-
 [tool.bumpver]
-current_version = "0.0.4"
+current_version = "0.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
@@ -87,4 +61,4 @@ push = false
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
-"src/pyasp/__init__.py" = ["{version}"]
+"src/piperun/__init__.py" = ["{version}"]
