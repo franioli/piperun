@@ -21,7 +21,7 @@ piperun was designed with the following principles in mind:
 
 ## Installation
 
-Install piperun using pip (not yet available):
+Install piperun using pip:
 ```bash
 pip install piperun
 ```
