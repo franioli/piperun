@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "piperun"
-version = "0.1.1"
+version = "0.1.0"
 description = "A flexible framework for building and executing command pipelines in Python"
 readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
@@ -52,13 +52,12 @@ log_cli_level = "info"
 testpaths = ["tests"]
 
 [tool.bumpver]
-current_version = "0.1.1"
+current_version = "0.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
-tag = true
-tag_name = "v{new_version}"
-push = true
+tag = false
+push = false
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
