@@ -48,6 +48,43 @@ def cmd_string_to_list(cmd_str: str) -> list[str]:
     return cmd_str.split()
 
 
+def is_boolean(value) -> bool:
+    return isinstance(value, bool)
+
+
+def is_short_key(key) -> bool:
+    return len(key) == 1 or key.startswith("-")
+
+
+def is_long_key(key) -> bool:
+    return len(key) > 1 or key.startswith("--")
+
+
+def is_empty_string(value) -> bool:
+    return value == ""
+
+
+def short_key(key) -> str:
+    if key.startswith("-"):
+        return key
+    return f"-{key}"
+
+
+def long_key(key: str) -> str:
+    if key.startswith("--"):
+        return key
+    return f"--{key}"
+
+
+def format_key(key: str) -> str:
+    if is_short_key(key):
+        return short_key(key)
+    elif is_long_key(key):
+        return long_key(key)
+    else:
+        raise ValueError(f"Invalid key: {key}")
+
+
 class OutputCapture:
     def __init__(self, verbose: bool = True):
         self.verbose = verbose
@@ -216,36 +253,6 @@ class Command:
             *args: Positional arguments to extend the command.
             **kwargs: Keyword arguments to add as parameters to the command.
         """
-
-        def is_boolean(value) -> bool:
-            return isinstance(value, bool)
-
-        def is_short_key(key) -> bool:
-            return len(key) == 1 or key.startswith("-")
-
-        def is_long_key(key) -> bool:
-            return len(key) > 1 or key.startswith("--")
-
-        def is_empty_string(value) -> bool:
-            return value == ""
-
-        def short_key(key) -> str:
-            if key.startswith("-"):
-                return key
-            return f"-{key}"
-
-        def long_key(key: str) -> str:
-            if key.startswith("--"):
-                return key
-            return f"--{key}"
-
-        def format_key(key: str) -> str:
-            if is_short_key(key):
-                return short_key(key)
-            elif is_long_key(key):
-                return long_key(key)
-            else:
-                raise ValueError(f"Invalid key: {key}")
 
         # If no arguments are provided, return
         if not args and not kwargs:
