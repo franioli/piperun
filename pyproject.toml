@@ -10,13 +10,12 @@ readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 maintainers = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 keywords = ["pipeline", "command", "shell", "parallel", "task"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Shells",
 ]
