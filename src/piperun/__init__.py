@@ -5,7 +5,7 @@ from .shell import Command, OutputCapture, run_command
 from .tasks import DelayedTask
 from .utils.logger import setup_logger
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "Pipeline",
