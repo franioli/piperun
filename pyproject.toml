@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 maintainers = [{ name = "Francesco Ioli", email = "francesco.ioli@geo.uzh.ch" }]
 license = { file = "LICENSE" }
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 keywords = ["pipeline", "command", "shell", "parallel", "task"]
 classifiers = [
     "Development Status :: 3 - Alpha",
